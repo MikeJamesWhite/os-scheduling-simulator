@@ -29,9 +29,7 @@ public class FCFSKernel implements Kernel {
 		// If ready queue empty then CPU goes idle ( holds a null value).
 		return pcb; // Returns process removed from CPU.
 	}
-            
-    
-                
+                        
     public int syscall(int number, Object... varargs) {
         int result = 0;
         switch (number) {
@@ -88,7 +86,8 @@ public class FCFSKernel implements Kernel {
             case WAKE_UP:
 				// IODevice has finished an IO request for a process.
 				ProcessControlBlock pcb = (ProcessControlBlock) varargs[1]; // Retrieve the PCB of the process (varargs[1]), set its state
-				pcb.setState(READY); // to READY, put it on the end of the ready queue.
+                pcb.setState(READY); // to READY, put it on the end of the ready queue.
+                readyQueue.offer(pcb);
                 if (!Config.getCPU().isIdle()) // If CPU is idle then dispatch().
                     dispatch();
                 break;
