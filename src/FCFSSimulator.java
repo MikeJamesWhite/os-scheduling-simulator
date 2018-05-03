@@ -5,7 +5,7 @@ import simulator.*;
 public class FCFSSimulator {
 
     public static void main(String[] args) {
-        System.out.println("*** FCFS Simulator ***")
+        System.out.println("*** FCFS Simulator ***");
 
         // get user input
         Scanner s = new Scanner(System.in);

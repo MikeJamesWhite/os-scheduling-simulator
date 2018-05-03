@@ -37,7 +37,8 @@ generator:
 simulator: 
 	javac $(JFLAGS) $(SRCDIR)/*.java
 
-
+tests: framework generator simulator
+	java -ea -cp bin FCFSSimulator
 		
 # Rules for generating documentation
 doc:

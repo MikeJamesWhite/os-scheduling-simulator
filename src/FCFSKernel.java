@@ -25,9 +25,10 @@ public class FCFSKernel implements Kernel {
     }
     
     private ProcessControlBlock dispatch() {
-		ProcessControlBlock pcb = Config.getCPU().contextSwitch(readyQueue.poll()); // Perform context switch, swapping process currently on CPU with one at front of ready queue.
+        ProcessControlBlock toDispatch = readyQueue.poll();
+		ProcessControlBlock toReturn = Config.getCPU().contextSwitch(toDispatch); // Perform context switch, swapping process currently on CPU with one at front of ready queue.
 		// If ready queue empty then CPU goes idle ( holds a null value).
-		return pcb; // Returns process removed from CPU.
+		return toReturn; // Returns process removed from CPU.
 	}
                         
     public int syscall(int number, Object... varargs) {
@@ -41,12 +42,12 @@ public class FCFSKernel implements Kernel {
                 break;
              case EXECVE: 
                 {
-                    ProcessControlBlock pcb = this.loadProgram((String)varargs[0]);
+                    ProcessControlBlock pcb = loadProgram((String)varargs[0], (Integer) varargs[1]);
                     if (pcb!=null) {
                         // Loaded successfully.
 						readyQueue.offer(pcb); // Now add to end of ready queue.
                         if (!Config.getCPU().isIdle()) // If CPU is idle then dispatch().
-                        dispatch();
+                            dispatch();
                     }
                     else {
                         result = -1;
@@ -56,20 +57,20 @@ public class FCFSKernel implements Kernel {
              case IO_REQUEST: 
                 {
 					// IO request has come from process currently on the CPU.
-					ProcessControlBlock pcb = CPU.getCurrentProcess(); // Get PCB from CPU.
+					ProcessControlBlock pcb = Config.getCPU().getCurrentProcess(); // Get PCB from CPU.
 					IODevice device = Config.getDevice((Integer)varargs[0]);// Find IODevice with given ID: Config.getDevice((Integer)varargs[0]);
 					device.requestIO((Integer) varargs[1], pcb, this); // Make IO request on device providing burst time (varages[1]),
 					// the PCB of the requesting process, and a reference to this kernel (so // that the IODevice can call interrupt() when the request is completed.
 					//
-					pcb.setState(WAITING); // Set the PCB state of the requesting process to WAITING.
+					pcb.setState(ProcessControlBlock.State.WAITING); // Set the PCB state of the requesting process to WAITING.
 					dispatch(); // Call dispatch().
                 }
                 break;
              case TERMINATE_PROCESS:
                 {
 					// Process on the CPU has terminated.
-					ProcessControlBlock pcb = CPU.getCurrentProcess(); // Get PCB from CPU.
-					pcb.setState(TERMINATED); // Set status to TERMINATED.
+					ProcessControlBlock pcb = Config.getCPU().getCurrentProcess(); // Get PCB from CPU.
+					pcb.setState(ProcessControlBlock.State.TERMINATED); // Set status to TERMINATED.
                     dispatch(); // Call dispatch().
                 }
                 break;
@@ -86,7 +87,7 @@ public class FCFSKernel implements Kernel {
             case WAKE_UP:
 				// IODevice has finished an IO request for a process.
 				ProcessControlBlock pcb = (ProcessControlBlock) varargs[1]; // Retrieve the PCB of the process (varargs[1]), set its state
-                pcb.setState(READY); // to READY, put it on the end of the ready queue.
+                pcb.setState(ProcessControlBlock.State.READY); // to READY, put it on the end of the ready queue.
                 readyQueue.offer(pcb);
                 if (!Config.getCPU().isIdle()) // If CPU is idle then dispatch().
                     dispatch();
@@ -96,9 +97,9 @@ public class FCFSKernel implements Kernel {
         }
     }
     
-    private static ProcessControlBlock loadProgram(String filename) {
+    private static ProcessControlBlock loadProgram(String filename, int priority) {
         try {
-            return ProcessControlBlockImpl.loadProgram(filename);
+            return ProcessControlBlockImpl.loadProgram(filename, priority);
         }
         catch (FileNotFoundException fileExp) {
             return null;

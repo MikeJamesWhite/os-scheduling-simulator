@@ -5,7 +5,7 @@ import simulator.*;
 public class RRSimulator {
 
     public static void main(String[] args) {
-        System.out.println("*** RR Simulator ***")
+        System.out.println("*** RR Simulator ***");
 
         // get user input
         Scanner s = new Scanner(System.in);
