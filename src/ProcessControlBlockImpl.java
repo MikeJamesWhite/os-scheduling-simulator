@@ -12,27 +12,29 @@ public class ProcessControlBlockImpl implements ProcessControlBlock {
 
     static int numProcesses = 0;
 
-    private Queue<Instruction> pending;
+    private Deque<Instruction> pending;
     private Instruction current;
     private int processID;
     private int priority;
     private String name;
     private State state;
 
-    ProcessControlBlockImpl () {
+    private ProcessControlBlockImpl (String name, int priority, Deque<Instruction> pending) {
         numProcesses++;
         this.processID = numProcesses;
         this.state = State.READY;
+
+        this.name = name;
+        this.priority = priority;
+        this.pending = pending;
+        this.current = pending.poll();
     }
 
     /**
      * Load a program from a file.
      */
     static ProcessControlBlockImpl loadProgram(String filename, int priority) throws IOException, FileNotFoundException {
-        ProcessControlBlockImpl pcb = new ProcessControlBlockImpl();
-        pcb.priority = priority;
-        pcb.pending = new ArrayDeque <Instruction>();
-        pcb.name = filename;
+        Deque<Instruction> pending = new ArrayDeque <Instruction>();
 
         File f = new File(filename);
         Scanner s = new Scanner(f);
@@ -42,16 +44,16 @@ public class ProcessControlBlockImpl implements ProcessControlBlock {
                 String[] vals = line.split(" ");
                 if (vals[0].equals("CPU")) {
                     CPUInstruction instr = new CPUInstruction(Integer.parseInt(vals[1]));
-                    pcb.pending.offer(instr);
+                    pending.offer(instr);
                 }
                 else {
                     IOInstruction instr = new IOInstruction(Integer.parseInt(vals[1]), Integer.parseInt(vals[2]));
-                    pcb.pending.offer(instr);
+                    pending.offer(instr);
                 }
             }
         }
 
-        return pcb;
+        return new ProcessControlBlockImpl(filename, priority, pending);
     }
 
     /**
@@ -96,7 +98,7 @@ public class ProcessControlBlockImpl implements ProcessControlBlock {
      * Determine if there are any more instructions.
      */
     public boolean hasNextInstruction() {
-        return pending.isEmpty();
+        return (!pending.isEmpty());
     }
     
     /**

@@ -45,7 +45,7 @@ public class CPU  {
             assert(instr instanceof CPUInstruction);
             units = ((CPUInstruction)instr).execute();
             Config.getSimulationClock().advanceUserTime(units);
-            
+            System.out.println("Executed CPU Instruction.");
             if (getCurrentProcess().hasNextInstruction()) {
                 getCurrentProcess().nextInstruction();
                 assert(getCurrentProcess().getInstruction() instanceof IOInstruction);
@@ -57,6 +57,7 @@ public class CPU  {
 
             }
             else {
+                System.out.println("No more instructions.");
                 // Terminate process
                 TRACE.SYSCALL(SystemCall.TERMINATE_PROCESS, getCurrentProcess());
                 Config.getSimulationClock().logSystemCall();

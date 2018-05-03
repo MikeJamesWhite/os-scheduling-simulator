@@ -2,6 +2,8 @@ import simulator.Config;
 import simulator.IODevice;
 import simulator.Kernel;
 import simulator.ProcessControlBlock;
+import simulator.ProcessControlBlock.State;
+
 //
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -28,7 +30,10 @@ public class FCFSKernel implements Kernel {
         ProcessControlBlock toDispatch = readyQueue.poll();
 		ProcessControlBlock toReturn = Config.getCPU().contextSwitch(toDispatch); // Perform context switch, swapping process currently on CPU with one at front of ready queue.
 		// If ready queue empty then CPU goes idle ( holds a null value).
-		return toReturn; // Returns process removed from CPU.
+        if (toDispatch != null)
+            toDispatch.setState(State.RUNNING);
+        
+        return toReturn; // Returns process removed from CPU.
 	}
                         
     public int syscall(int number, Object... varargs) {
@@ -46,7 +51,7 @@ public class FCFSKernel implements Kernel {
                     if (pcb!=null) {
                         // Loaded successfully.
 						readyQueue.offer(pcb); // Now add to end of ready queue.
-                        if (!Config.getCPU().isIdle()) // If CPU is idle then dispatch().
+                        if (Config.getCPU().isIdle()) // If CPU is idle then dispatch().
                             dispatch();
                     }
                     else {
@@ -89,7 +94,7 @@ public class FCFSKernel implements Kernel {
 				ProcessControlBlock pcb = (ProcessControlBlock) varargs[1]; // Retrieve the PCB of the process (varargs[1]), set its state
                 pcb.setState(ProcessControlBlock.State.READY); // to READY, put it on the end of the ready queue.
                 readyQueue.offer(pcb);
-                if (!Config.getCPU().isIdle()) // If CPU is idle then dispatch().
+                if (Config.getCPU().isIdle()) // If CPU is idle then dispatch().
                     dispatch();
                 break;
             default:

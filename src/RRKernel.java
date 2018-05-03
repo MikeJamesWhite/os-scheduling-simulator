@@ -41,12 +41,12 @@ public class RRKernel implements Kernel {
                 break;
              case EXECVE: 
                 {
-                    ProcessControlBlock pcb = this.loadProgram((String)varargs[0], (Integer) varargs[1]);
+                    ProcessControlBlock pcb = loadProgram((String)varargs[0], (Integer) varargs[1]);
                     if (pcb!=null) {
                         // Loaded successfully.
 						readyQueue.offer(pcb); // Now add to end of ready queue.
-                        if (!Config.getCPU().isIdle()) // If CPU is idle then dispatch().
-                        dispatch();
+                        if (Config.getCPU().isIdle()) // If CPU is idle then dispatch().
+                            dispatch();
                     }
                     else {
                         result = -1;
@@ -88,7 +88,7 @@ public class RRKernel implements Kernel {
 				ProcessControlBlock pcb = (ProcessControlBlock) varargs[1]; // Retrieve the PCB of the process (varargs[1]), set its state
                 pcb.setState(ProcessControlBlock.State.READY); // to READY, put it on the end of the ready queue.
                 readyQueue.offer(pcb);
-                if (!Config.getCPU().isIdle()) // If CPU is idle then dispatch().
+                if (Config.getCPU().isIdle()) // If CPU is idle then dispatch().
                     dispatch();
                 break;
             default:
