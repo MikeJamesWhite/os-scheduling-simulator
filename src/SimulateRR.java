@@ -2,7 +2,7 @@ import java.io.*;
 import java.util.*;
 import simulator.*;
 
-public class RRSimulator {
+public class SimulateRR {
 
     public static void main(String[] args) {
         System.out.println("*** RR Simulator ***");
@@ -11,6 +11,8 @@ public class RRSimulator {
         Scanner s = new Scanner(System.in);
         System.out.print("Enter configuration file name: ");
         String configFileName = s.nextLine();
+        System.out.print("Enter slice time: ");
+        int timeout = Integer.parseInt(s.nextLine());
         System.out.print("Enter cost of system call: ");
         int syscallCost = Integer.parseInt(s.nextLine());
         System.out.print("Enter cost of context switch: ");
@@ -21,17 +23,16 @@ public class RRSimulator {
 
         // run simulation
         TRACE.SET_TRACE_LEVEL(level);
-        final Kernel kernel = new RRKernel();
+        final Kernel kernel = new RRKernel(timeout);
 
         Config.init(kernel, dispatchCost, syscallCost);
         Config.buildConfiguration(configFileName);
         Config.run();
 
         // print results
-        System.out.println("*** Results ***");        
         SystemTimer timer = Config.getSystemTimer();
         System.out.println(timer);
-        System.out.println("Context switches:" + Config.getCPU().getContextSwitches());
+        System.out.println("Context switches: " + Config.getCPU().getContextSwitches());
         System.out.printf("CPU utilization: %.2f\n", ((double)timer.getUserTime())/timer.getSystemTime()*100);
     }
 }

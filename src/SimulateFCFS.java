@@ -2,7 +2,7 @@ import java.io.*;
 import java.util.*;
 import simulator.*;
 
-public class FCFSSimulator {
+public class SimulateFCFS {
 
     public static void main(String[] args) {
         System.out.println("*** FCFS Simulator ***");
@@ -28,10 +28,9 @@ public class FCFSSimulator {
         Config.run();
 
         // print results
-        System.out.println("*** Results ***");        
         SystemTimer timer = Config.getSystemTimer();
         System.out.println(timer);
-        System.out.println("Context switches:" + Config.getCPU().getContextSwitches());
+        System.out.println("Context switches: " + Config.getCPU().getContextSwitches());
         System.out.printf("CPU utilization: %.2f\n", ((double)timer.getUserTime())/timer.getSystemTime()*100);
     }
 }

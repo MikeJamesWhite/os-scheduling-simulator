@@ -128,7 +128,7 @@ public class ProcessControlBlockImpl implements ProcessControlBlock {
      * Obtain a String representation of the PCB of the form '{pid(&lt;pid&gt;), state(&lt;state&gt;), name(&lt;program name&gt;)}'.
      */
     public String toString() {
-        return "{pid(<" + processID + ">), state(<" + this.state + ">), name(<" + name + ">)}";
+        return "process(pid=" + processID + ", state=" + this.state + ", name=\"" + name + "\")";
     }
 
 }
