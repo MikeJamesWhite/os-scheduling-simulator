@@ -94,9 +94,10 @@ public class RRKernel implements Kernel {
             case TIME_OUT:
                 ProcessControlBlock interupted = Config.getCPU().getCurrentProcess();
                 readyQueue.offer(interupted);
+                interupted.setState(ProcessControlBlock.State.READY);
+                if (readyQueue.size() == 1)
+                    interupted.setState(ProcessControlBlock.State.RUNNING);
                 dispatch();
-                if (!Config.getCPU().isIdle() && Config.getCPU().getCurrentProcess() != interupted)
-                    interupted.setState(ProcessControlBlock.State.READY);
 
                 break;
             case WAKE_UP:
